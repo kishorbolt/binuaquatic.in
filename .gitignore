@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+models/u2net.onnx
+
+scratch/
+__pycache__/
+*.pyc
