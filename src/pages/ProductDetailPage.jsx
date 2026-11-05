@@ -180,6 +180,10 @@ export default function ProductDetailPage() {
                   alt={product.name}
                   className="detail-main-img"
                   loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  width="600"
+                  height="600"
                   onLoad={() => setImageLoaded(true)}
                   onError={() => {
                     setImageError(true);
@@ -368,7 +372,7 @@ export default function ProductDetailPage() {
             </h3>
             <div className="products-grid">
               {relatedProducts.map((relProduct) => (
-                <ProductCard key={relProduct.id} product={relProduct} />
+                <ProductCard key={relProduct.id} product={relProduct} isPriority={false} />
               ))}
             </div>
           </section>

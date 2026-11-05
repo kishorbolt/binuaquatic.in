@@ -100,6 +100,8 @@ export default function AboutPage() {
                   className="about-story-logo-img"
                   width="200"
                   height="200"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
               <div className="about-badge-storefront">
@@ -129,6 +131,9 @@ export default function AboutPage() {
                 alt="Freshwater aquarium setup"
                 className="about-showcase-img"
                 loading="lazy"
+                decoding="async"
+                width="1672"
+                height="941"
               />
             </div>
           </div>
@@ -164,6 +169,7 @@ export default function AboutPage() {
                 alt="Fish Foods and Nutrition - Binu's Aquatic and Plants"
                 className="about-showcase-img"
                 loading="lazy"
+                decoding="async"
                 width="1672"
                 height="941"
               />
@@ -201,6 +207,7 @@ export default function AboutPage() {
                 alt="Fish Medicines and Aquatic Care - Binu's Aquatic and Plants"
                 className="about-showcase-img"
                 loading="lazy"
+                decoding="async"
                 width="1672"
                 height="941"
               />
@@ -238,6 +245,7 @@ export default function AboutPage() {
                 alt="Aquarium Equipment and Filters - Binu's Aquatic and Plants"
                 className="about-showcase-img"
                 loading="lazy"
+                decoding="async"
                 width="1672"
                 height="941"
               />

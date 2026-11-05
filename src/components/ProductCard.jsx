@@ -5,7 +5,7 @@ import { formatPrice, calculateDiscount } from '../data/products';
 import { getProductUrl, openWhatsApp, createTankEnquiryMessage } from '../utils/whatsapp';
 import { useCart } from '../context/CartContext';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, isPriority = false }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const { addToCart } = useCart();
@@ -91,7 +91,8 @@ export default function ProductCard({ product }) {
             src={product.thumbnail || product.image}
             alt={product.name}
             className="product-card-img"
-            loading="lazy"
+            loading={isPriority ? "eager" : "lazy"}
+            fetchPriority={isPriority ? "high" : "auto"}
             decoding="async"
             width="420"
             height="420"

@@ -44,6 +44,11 @@ export default function Hero() {
                 src="/binulogo.png"
                 alt="Binu's Aquatic and Plants Official Emblem"
                 className="hero-logo-img"
+                width="76"
+                height="76"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
               />
             </div>
             <div>

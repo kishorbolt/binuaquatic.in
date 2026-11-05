@@ -60,6 +60,9 @@ export default function Header() {
               className="brand-logo-img"
               width="48"
               height="48"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
             />
           </div>
           <div className="brand-text-wrapper">

@@ -175,6 +175,9 @@ export default function CartDrawer() {
                       alt={product.name}
                       className="cart-item-img"
                       loading="lazy"
+                      decoding="async"
+                      width="64"
+                      height="64"
                     />
 
                     <div className="cart-item-info">

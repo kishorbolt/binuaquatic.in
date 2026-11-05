@@ -360,8 +360,8 @@ export default function ProductGrid() {
         {paginatedProducts.length > 0 ? (
           <>
             <div className="products-grid">
-              {paginatedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {paginatedProducts.map((product, idx) => (
+                <ProductCard key={product.id} product={product} isPriority={idx < 4} />
               ))}
             </div>
 
