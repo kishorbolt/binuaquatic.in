@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, MessageCircle, Menu, X, ChevronRight, Phone, ChevronDown } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -10,6 +11,34 @@ export default function Header() {
   const { totalItems, openCart, subtotal } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Lock background scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleCategoryNav = (cat) => {
     setMobileMenuOpen(false);
@@ -203,13 +232,29 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
+      {/* Mobile Drawer (Portaled to body to escape backdrop-filter stacking context) */}
+      {mobileMenuOpen && typeof document !== 'undefined' && createPortal(
         <>
-          <div className="mobile-nav-backdrop" onClick={() => setMobileMenuOpen(false)} />
-          <div className="mobile-nav-drawer" role="dialog" aria-modal="true">
+          <div
+            className="mobile-nav-backdrop"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <aside
+            className="mobile-nav-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile Navigation Menu"
+          >
             <div className="mobile-nav-header">
-              <div className="brand-link">
+              <Link
+                to="/"
+                className="brand-link"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
                 <div className="brand-logo-circle" style={{ width: '42px', height: '42px' }}>
                   <img
                     src="/binulogo.png"
@@ -223,20 +268,20 @@ export default function Header() {
                   <span className="brand-title" style={{ fontSize: '1rem' }}>Binu’s Aquatic</span>
                   <span className="brand-subtitle">Ranipet, Tamil Nadu</span>
                 </div>
-              </div>
+              </Link>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="cart-close-btn"
-                aria-label="Close Mobile Menu"
+                className="mobile-nav-close-btn"
+                aria-label="Close Mobile Navigation"
               >
-                <X size={24} />
+                <X size={22} />
               </button>
             </div>
 
             <div className="mobile-nav-links">
               <button
                 onClick={() => { setMobileMenuOpen(false); navigate('/'); }}
-                className="mobile-nav-link"
+                className={`mobile-nav-link ${location.pathname === '/' ? 'active' : ''}`}
               >
                 <span>Home</span>
                 <ChevronRight size={16} color="var(--color-aqua-400)" />
@@ -244,13 +289,13 @@ export default function Header() {
 
               <button
                 onClick={() => { setMobileMenuOpen(false); navigate('/about'); }}
-                className="mobile-nav-link"
+                className={`mobile-nav-link ${location.pathname === '/about' ? 'active' : ''}`}
               >
                 <span>About Us</span>
                 <ChevronRight size={16} color="var(--color-aqua-400)" />
               </button>
 
-              <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.78rem', textTransform: 'uppercase', color: 'var(--color-aqua-400)', fontWeight: 700, letterSpacing: '0.05em' }}>
+              <div className="mobile-nav-section-title">
                 Departments
               </div>
 
@@ -258,8 +303,7 @@ export default function Header() {
                 <button
                   key={cat}
                   onClick={() => handleCategoryNav(cat)}
-                  className="mobile-nav-link"
-                  style={{ paddingLeft: '1.25rem', fontSize: '0.9rem' }}
+                  className="mobile-nav-link mobile-nav-sublink"
                 >
                   <span>{cat}</span>
                   <ChevronRight size={14} color="var(--text-muted)" />
@@ -276,11 +320,12 @@ export default function Header() {
               </button>
             </div>
 
-            <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+            <div className="mobile-nav-footer">
               <a
                 href={`tel:${DISPLAY_PHONE.replace(/\s+/g, '')}`}
                 className="hero-phone-chip"
                 style={{ width: '100%', justifyContent: 'center', marginBottom: '0.75rem' }}
+                onClick={() => setMobileMenuOpen(false)}
               >
                 <Phone size={16} />
                 <span>{DISPLAY_PHONE}</span>
@@ -298,8 +343,9 @@ export default function Header() {
                 <span>Chat on WhatsApp</span>
               </button>
             </div>
-          </div>
-        </>
+          </aside>
+        </>,
+        document.body
       )}
     </header>
   );
