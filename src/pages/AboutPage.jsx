@@ -265,7 +265,7 @@ export default function AboutPage() {
 
           <div className="about-collection-grid">
             <div className="about-collection-card">
-              <h4 style={{ color: '#ffffff', fontWeight: 700, marginBottom: '0.35rem' }}>Fish Foods</h4>
+              <h4 style={{ color: '#ffffff', fontWeight: 700, marginBottom: '0.35rem' }}>Birds & Fish Food</h4>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Flakes, pellets, granules, bloodworms, pond feeds, bird diets, and companion pet foods.</p>
             </div>
             <div className="about-collection-card">

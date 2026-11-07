@@ -43,6 +43,8 @@ export default function ProductGrid() {
       if (urlCat) {
         if (urlCat === 'Filters' || urlCat === 'Others') {
           setSelectedCategory('Filters & Others');
+        } else if (urlCat === 'Fish Food' || urlCat === 'Fish Foods') {
+          setSelectedCategory('Birds & Fish Food');
         } else if (CATEGORIES.includes(urlCat)) {
           setSelectedCategory(urlCat);
         }
@@ -57,6 +59,8 @@ export default function ProductGrid() {
     const cat = searchParams.get('category');
     if (cat === 'Filters' || cat === 'Others') {
       setSelectedCategory('Filters & Others');
+    } else if (cat === 'Fish Food' || cat === 'Fish Foods') {
+      setSelectedCategory('Birds & Fish Food');
     } else if (cat && CATEGORIES.includes(cat)) {
       setSelectedCategory(cat);
     }
@@ -143,6 +147,7 @@ export default function ProductGrid() {
       const matchesCategory =
         selectedCategory === 'All Products' ||
         item.category === selectedCategory ||
+        (selectedCategory === 'Birds & Fish Food' && (item.category === 'Birds & Fish Food' || item.category === 'Fish Foods' || item.category === 'Fish Food')) ||
         (selectedCategory === 'Filters & Others' && (item.category === 'Filters' || item.category === 'Others' || item.category === 'Filters & Others'));
 
       const q = activeSearch.toLowerCase().trim();

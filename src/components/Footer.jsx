@@ -79,8 +79,8 @@ export default function Footer() {
             <h4 className="footer-col-title">Store Categories</h4>
             <ul className="footer-links-list">
               <li>
-                <button onClick={() => handleCategoryClick('Fish Foods')} className="footer-link">
-                  Fish Foods
+                <button onClick={() => handleCategoryClick('Birds & Fish Food')} className="footer-link">
+                  Birds & Fish Food
                 </button>
               </li>
               <li>

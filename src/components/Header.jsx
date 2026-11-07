@@ -71,7 +71,7 @@ export default function Header() {
 
   const categories = [
     'All Products',
-    'Fish Foods',
+    'Birds & Fish Food',
     'Fish Medicines',
     'Filters & Others',
     'Tanks'
