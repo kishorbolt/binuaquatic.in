@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MessageCircle, Sprout } from 'lucide-react';
 import { openWhatsApp, createPlantEnquiryMessage } from '../utils/whatsapp';
 
@@ -7,14 +8,21 @@ export default function TcPlantCard({ plant, isPriority = false }) {
   const [imageError, setImageError] = useState(false);
 
   const altLabel = plant.name || 'TC Live Plant';
+  const detailPath = `/products/${encodeURIComponent(plant.slug)}`;
 
-  const handleEnquireNow = () => {
+  const handleEnquireNow = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     openWhatsApp(createPlantEnquiryMessage(plant));
   };
 
   return (
     <article className="product-card tc-plant-card" id={plant.id}>
-      <div className="product-image-container tc-plant-image-container">
+      <Link
+        to={detailPath}
+        className="product-image-container tc-plant-image-container"
+        aria-label={`View ${altLabel}`}
+      >
         {!imageLoaded && !imageError && (
           <div
             className="skeleton-placeholder"
@@ -52,7 +60,7 @@ export default function TcPlantCard({ plant, isPriority = false }) {
             }}
           />
         )}
-      </div>
+      </Link>
 
       <div className="product-body tc-plant-body">
         <div className="product-card-category-row">
@@ -63,9 +71,11 @@ export default function TcPlantCard({ plant, isPriority = false }) {
         </div>
 
         {plant.name && (
-          <h3 className="product-title tc-plant-title" title={plant.name}>
-            {plant.name}
-          </h3>
+          <Link to={detailPath} className="product-name-link">
+            <h3 className="product-title tc-plant-title" title={plant.name}>
+              {plant.name}
+            </h3>
+          </Link>
         )}
 
         <div className="tc-plant-actions">

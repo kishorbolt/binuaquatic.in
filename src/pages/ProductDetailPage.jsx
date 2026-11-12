@@ -6,10 +6,12 @@ import {
   formatPrice,
   calculateDiscount
 } from '../data/products';
+import { TC_LIVE_PLANTS, getTcLivePlantBySlug } from '../data/tcLivePlants';
 import {
   getProductUrl,
   openWhatsApp,
-  createTankEnquiryMessage
+  createTankEnquiryMessage,
+  createPlantEnquiryMessage
 } from '../utils/whatsapp';
 import { useCart } from '../context/CartContext';
 import {
@@ -26,10 +28,11 @@ import {
 } from 'lucide-react';
 import NotFoundPage from './NotFoundPage';
 import ProductCard from '../components/ProductCard';
+import TcPlantCard from '../components/TcPlantCard';
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
-  const product = getProductBySlug(slug);
+  const product = getProductBySlug(slug) || getTcLivePlantBySlug(slug);
   const { addToCart, MIN_ORDER_VALUE } = useCart();
 
   const [quantity, setQuantity] = useState(1);
@@ -40,8 +43,11 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    setImageLoaded(false);
+    setImageError(false);
+    setQuantity(1);
     if (product) {
-      document.title = `${product.name} | Binu’s Aquatic and Plants`;
+      document.title = `${product.name || 'TC Live Plant'} | Binu’s Aquatic and Plants`;
     }
   }, [slug, product]);
 
@@ -49,7 +55,8 @@ export default function ProductDetailPage() {
     return <NotFoundPage message={`Product with identifier "${slug}" was not found in our catalog.`} />;
   }
 
-  const hasValidPrice = typeof product.price === 'number' && product.price > 0 && !product.isEnquiryOnly;
+  const isLivePlant = Boolean(product.isLivePlant);
+  const hasValidPrice = !isLivePlant && typeof product.price === 'number' && product.price > 0 && !product.isEnquiryOnly;
   const hasDiscount = Boolean(hasValidPrice && product.originalPrice && product.originalPrice > product.price);
   const discountPercent = hasDiscount ? calculateDiscount(product.originalPrice, product.price) : 0;
   const priceFormatted = hasValidPrice ? formatPrice(product.price) : null;
@@ -63,6 +70,10 @@ export default function ProductDetailPage() {
   };
 
   const handleEnquireNow = () => {
+    if (isLivePlant) {
+      openWhatsApp(createPlantEnquiryMessage(product));
+      return;
+    }
     if (product.category === 'Tanks' || product.isTank) {
       openWhatsApp(createTankEnquiryMessage(product));
       return;
@@ -103,9 +114,11 @@ export default function ProductDetailPage() {
   };
 
   // Related products from same category
-  const relatedProducts = PRODUCTS.filter(
-    (p) => p.category === product.category && p.id !== product.id
-  ).slice(0, 4);
+  const relatedProducts = isLivePlant
+    ? TC_LIVE_PLANTS.filter((p) => p.id !== product.id).slice(0, 4)
+    : PRODUCTS.filter(
+        (p) => p.category === product.category && p.id !== product.id
+      ).slice(0, 4);
 
   return (
     <main className="product-detail-section">
@@ -118,13 +131,13 @@ export default function ProductDetailPage() {
             {product.category}
           </Link>
           <ChevronRight size={14} className="breadcrumb-separator" />
-          <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{product.name}</span>
+          <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{product.name || 'TC Live Plant'}</span>
         </nav>
 
         {/* Back Link */}
         <div style={{ marginBottom: '1.5rem' }}>
           <Link
-            to="/#products"
+            to={isLivePlant ? '/?category=TC%20Live%20Plants#products' : '/#products'}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -134,7 +147,7 @@ export default function ProductDetailPage() {
             }}
           >
             <ArrowLeft size={16} />
-            <span>Back to All Products</span>
+            <span>{isLivePlant ? 'Back to TC Live Plants' : 'Back to All Products'}</span>
           </Link>
         </div>
 
@@ -208,7 +221,7 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            <h1 className="detail-title">{product.name}</h1>
+            <h1 className="detail-title">{product.name || 'TC Live Plant'}</h1>
 
             {/* Pricing Box: ONLY when valid price; clean omission when enquiry-only */}
             {hasValidPrice && (
@@ -245,7 +258,11 @@ export default function ProductDetailPage() {
             )}
 
             {/* Description */}
-            <p className="detail-desc">{product.description}</p>
+            {(product.description || isLivePlant) && (
+              <p className="detail-desc">
+                {product.description || 'Fresh tissue culture live aquarium plant from Binu’s Aquatic and Plants, Navalpur, Ranipet. Click Enquire Now to check availability directly on WhatsApp.'}
+              </p>
+            )}
 
             {/* Features Highlight */}
             {product.features && product.features.length > 0 && (
@@ -345,7 +362,13 @@ export default function ProductDetailPage() {
                   id="detail-enquire-btn"
                 >
                   <MessageCircle size={22} />
-                  <span>{product.category === 'Tanks' || product.isTank ? 'Enquire on WhatsApp' : 'Enquire Now on WhatsApp'}</span>
+                  <span>
+                    {isLivePlant
+                      ? 'Enquire Now'
+                      : product.category === 'Tanks' || product.isTank
+                        ? 'Enquire on WhatsApp'
+                        : 'Enquire Now on WhatsApp'}
+                  </span>
                 </button>
               )}
             </div>
@@ -371,9 +394,13 @@ export default function ProductDetailPage() {
               More in {product.category}
             </h3>
             <div className="products-grid">
-              {relatedProducts.map((relProduct) => (
-                <ProductCard key={relProduct.id} product={relProduct} isPriority={false} />
-              ))}
+              {relatedProducts.map((relProduct) =>
+                isLivePlant ? (
+                  <TcPlantCard key={relProduct.id} plant={relProduct} isPriority={false} />
+                ) : (
+                  <ProductCard key={relProduct.id} product={relProduct} isPriority={false} />
+                )
+              )}
             </div>
           </section>
         )}

@@ -136,7 +136,11 @@ export function createTankEnquiryMessage(product) {
 }
 
 export function createPlantEnquiryMessage(plant) {
-  const plantName = typeof plant === 'string' ? plant : plant?.name;
+  const isString = typeof plant === 'string';
+  const plantName = isString ? plant.trim() : plant?.name;
+  const plantSlug = isString ? '' : plant?.slug;
+  const productUrl = plantSlug ? getProductUrl(plantSlug) : '';
+
   const lines = [
     "Hello Binu's Aquatic and Plants!",
     "",
@@ -148,6 +152,10 @@ export function createPlantEnquiryMessage(plant) {
     lines.push(`Plant Name: ${plantName}`);
   } else {
     lines.push("Category: TC Live Plants");
+  }
+
+  if (productUrl) {
+    lines.push(`Product Link: ${productUrl}`);
   }
 
   lines.push("");
