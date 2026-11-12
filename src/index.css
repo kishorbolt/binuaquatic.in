@@ -217,7 +217,7 @@ input, select, textarea {
 .desktop-nav {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: clamp(0.85rem, 1.35vw, 1.4rem);
 }
 
 @media (max-width: 1024px) {
@@ -233,6 +233,7 @@ input, select, textarea {
   transition: color var(--transition-fast);
   padding: 0.35rem 0.2rem;
   position: relative;
+  white-space: nowrap;
 }
 
 .nav-link:hover, .nav-link.active {
@@ -871,6 +872,221 @@ input, select, textarea {
 
 .sort-select:focus {
   border-color: var(--color-aqua-500);
+}
+
+/* Birds & Fish Food Brand Organization */
+.brand-filter-bar {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.75rem;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.brand-filter-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.brand-filter-label {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-aqua-400);
+}
+
+.brand-reset-inline-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-cyan-300);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.brand-reset-inline-btn:hover {
+  color: var(--text-main);
+  background: var(--surface-glass);
+  border-color: var(--border-accent);
+}
+
+.brand-pills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.brand-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.85rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-glass);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.brand-pill-btn:hover {
+  border-color: var(--border-accent);
+  color: var(--text-main);
+  background: rgba(34, 211, 238, 0.1);
+}
+
+.brand-pill-btn.active {
+  background: linear-gradient(135deg, var(--color-aqua-500), #0891b2);
+  border-color: var(--color-aqua-400);
+  color: var(--color-ocean-950);
+  box-shadow: 0 2px 10px rgba(6, 182, 212, 0.3);
+}
+
+.brand-pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.brand-pill-btn.active .brand-pill-count {
+  background: rgba(2, 11, 20, 0.22);
+  color: var(--color-ocean-950);
+}
+
+.brand-sections-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.brand-section-block {
+  scroll-margin-top: 6rem;
+}
+
+.brand-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-accent);
+}
+
+.brand-section-heading-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.brand-section-title {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.02em;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.brand-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 1.15em;
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--color-aqua-400), var(--color-aqua-500));
+  flex-shrink: 0;
+}
+
+.brand-section-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-aqua-400);
+  background: rgba(34, 211, 238, 0.1);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+}
+
+@media (max-width: 768px) {
+  .brand-filter-bar {
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .brand-pills-list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 0.35rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-accent) transparent;
+  }
+
+  .brand-sections-container {
+    gap: 1.75rem;
+  }
+
+  .brand-section-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+  }
+
+  .brand-section-title {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-filter-bar {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .brand-pill-btn {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+  }
+
+  .brand-section-title {
+    font-size: 1.05rem;
+  }
+
+  .brand-section-count {
+    font-size: 0.72rem;
+    padding: 0.18rem 0.55rem;
+  }
 }
 
 /* Products Grid - Fluid Responsive Column Progression */
@@ -3195,4 +3411,212 @@ input, select, textarea {
   border-color: var(--color-aqua-400);
   background: rgba(34, 211, 238, 0.05);
   transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   TC Live Plants Dedicated Section
+   ========================================================================== */
+
+.tc-plants-section {
+  padding: 4.5rem 0 4rem;
+  position: relative;
+  border-top: 1px solid var(--border-subtle);
+  background: radial-gradient(circle at top center, rgba(16, 185, 129, 0.08) 0%, transparent 58%);
+  scroll-margin-top: 4.5rem;
+}
+
+.tc-plants-header {
+  margin-bottom: 2.25rem;
+}
+
+.tc-plants-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-emerald-400);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.32rem 0.85rem;
+  border-radius: var(--radius-full);
+}
+
+.tc-plants-embedded {
+  margin-top: 0.75rem;
+}
+
+.tc-plants-embedded-intro {
+  background: var(--surface-card);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tc-plants-embedded-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tc-plants-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tc-plants-count-info {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.tc-plants-search-box {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  align-items: center;
+  background: var(--surface-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0 0.75rem;
+  transition: border-color var(--transition-fast);
+}
+
+.tc-plants-search-box:focus-within {
+  border-color: var(--color-emerald-400);
+}
+
+.tc-plants-search-icon {
+  color: var(--color-emerald-400);
+  flex-shrink: 0;
+}
+
+.tc-plants-search-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 0.88rem;
+  padding: 0.58rem 0.5rem;
+  outline: none;
+}
+
+.tc-plants-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.tc-plants-search-clear {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem;
+  border-radius: var(--radius-sm);
+}
+
+.tc-plants-search-clear:hover {
+  color: var(--text-main);
+}
+
+.tc-plant-card:hover {
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.16), var(--shadow-md);
+}
+
+.tc-plant-card-img {
+  padding: 0;
+  object-fit: contain;
+  background: #ffffff;
+}
+
+.tc-plant-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 100%;
+  background: #f8fafc;
+  padding: 1rem;
+  text-align: center;
+}
+
+.tc-plant-fallback-title {
+  font-weight: 700;
+  color: var(--color-ocean-900);
+  font-size: 0.88rem;
+}
+
+.badge-plant-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--color-emerald-400);
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.tc-plant-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.tc-plant-title {
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.tc-plant-actions {
+  margin-top: auto;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.tc-plant-enquire-btn {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .tc-plants-section {
+    padding: 3.25rem 0 2.75rem;
+  }
+
+  .tc-plants-search-box {
+    max-width: 100%;
+  }
+
+  .tc-plant-title {
+    font-size: 0.94rem;
+    min-height: 2.3rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tc-plant-actions {
+    padding-top: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tc-plants-section {
+    padding: 2.5rem 0 2.25rem;
+  }
+
+  .tc-plants-embedded-intro {
+    padding: 0.85rem 1rem;
+  }
+
+  .tc-plant-title {
+    font-size: 0.86rem;
+  }
 }

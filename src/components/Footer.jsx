@@ -98,6 +98,11 @@ export default function Footer() {
                   Tanks
                 </button>
               </li>
+              <li>
+                <button onClick={() => handleCategoryClick('TC Live Plants')} className="footer-link">
+                  TC Live Plants
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -168,7 +173,7 @@ export default function Footer() {
                 <Phone size={18} color="var(--color-aqua-400)" style={{ flexShrink: 0 }} />
                 <div>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>Store Landline:</span>
-                  <a href={`tel:${STORE_LANDLINE.replace(/\s+/g, '')}`} style={{ color: '#ffffff', fontWeight: 600 }}>
+                  <a href={`tel:${STORE_LANDLINE}`} style={{ color: '#ffffff', fontWeight: 600 }}>
                     {STORE_LANDLINE}
                   </a>
                 </div>

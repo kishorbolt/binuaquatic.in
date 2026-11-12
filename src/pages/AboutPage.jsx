@@ -322,7 +322,7 @@ export default function AboutPage() {
                 <div>
                   <h4 style={{ color: '#ffffff', fontWeight: 700 }}>Store Landline</h4>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                    <a href={`tel:${STORE_LANDLINE.replace(/\s+/g, '')}`} style={{ color: 'var(--color-aqua-400)', textDecoration: 'underline' }}>
+                    <a href={`tel:${STORE_LANDLINE}`} style={{ color: 'var(--color-aqua-400)', textDecoration: 'underline' }}>
                       {STORE_LANDLINE}
                     </a>
                   </p>
@@ -361,7 +361,7 @@ export default function AboutPage() {
                   <span>Call Mobile</span>
                 </a>
                 <a
-                  href={`tel:${STORE_LANDLINE.replace(/\s+/g, '')}`}
+                  href={`tel:${STORE_LANDLINE}`}
                   className="btn-primary"
                   style={{ padding: '0.65rem 1.25rem', fontSize: '0.88rem', backgroundColor: 'var(--color-ocean-800)', borderColor: 'var(--border-subtle)' }}
                 >

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight, MessageCircle, Phone, ShieldCheck, Sparkles, Truck } from 'lucide-react';
-import { DISPLAY_PHONE, openWhatsApp, createGeneralEnquiryMessage } from '../utils/whatsapp';
+import { DISPLAY_PHONE, WHATSAPP_PHONE } from '../utils/whatsapp';
 
 export default function Hero() {
   const scrollToProducts = () => {
@@ -11,7 +11,9 @@ export default function Hero() {
   };
 
   const handleHeroWhatsApp = () => {
-    openWhatsApp(createGeneralEnquiryMessage('Homepage Hero Order Enquiry'));
+    if (typeof window !== 'undefined') {
+      window.open(`https://wa.me/${WHATSAPP_PHONE}`, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -84,7 +86,7 @@ export default function Hero() {
               id="hero-whatsapp-btn"
             >
               <MessageCircle size={20} />
-              <span>Order on WhatsApp</span>
+              <span>Enquire Now</span>
             </button>
           </div>
 

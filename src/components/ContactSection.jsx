@@ -78,7 +78,7 @@ export default function ContactSection() {
                   <h4 className="contact-item-title">Store Landline</h4>
                   <p className="contact-item-detail">
                     <a
-                      href={`tel:${STORE_LANDLINE.replace(/\s+/g, '')}`}
+                      href={`tel:${STORE_LANDLINE}`}
                       style={{ color: 'var(--color-cyan-300)', textDecoration: 'underline' }}
                     >
                       {STORE_LANDLINE}
@@ -138,7 +138,7 @@ export default function ContactSection() {
               </a>
 
               <a
-                href={`tel:${STORE_LANDLINE.replace(/\s+/g, '')}`}
+                href={`tel:${STORE_LANDLINE}`}
                 className="btn-contact-action btn-contact-phone"
                 style={{ backgroundColor: 'var(--color-ocean-800)', border: '1px solid var(--border-subtle)' }}
               >

@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Search, Sparkles, MessageCircle, AlertCircle, ChevronLeft, ChevronRight, X, ArrowRight, Box } from 'lucide-react';
-import { PRODUCTS, CATEGORIES, formatPrice } from '../data/products';
+import { PRODUCTS, CATEGORIES, groupProductsByBrand, formatPrice } from '../data/products';
 import ProductCard from './ProductCard';
+import TcLivePlantsShowcase from './TcLivePlantsShowcase';
 import { openWhatsApp, createGeneralEnquiryMessage } from '../utils/whatsapp';
 
 const PRODUCTS_PER_PAGE = 20;
+
+function slugifyBrand(brandName) {
+  return String(brandName || 'other')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
 
 // Lightweight fuzzy match helper
 function fuzzyMatch(str, query) {
@@ -19,15 +27,25 @@ function fuzzyMatch(str, query) {
   return words.every(word => s.includes(word));
 }
 
-export default function ProductGrid() {
+export default function ProductGrid({ onCategoryChange }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const initialCategory = searchParams.get('category') || 'All Products';
+  const normalizeUrlCategory = (cat) => {
+    if (!cat) return null;
+    if (cat === 'Filters' || cat === 'Others') return 'Filters & Others';
+    if (cat === 'Fish Food' || cat === 'Fish Foods') return 'Birds & Fish Food';
+    if (cat.toLowerCase() === 'tc live plants') return 'TC Live Plants';
+    if (CATEGORIES.includes(cat)) return cat;
+    return null;
+  };
+
+  const initialCategory = normalizeUrlCategory(searchParams.get('category')) || 'All Products';
   const initialPage = parseInt(searchParams.get('page') || '1', 10);
   const initialQuery = searchParams.get('q') || '';
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedBrand, setSelectedBrand] = useState('All');
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [activeSearch, setActiveSearch] = useState(initialQuery);
   const [sortBy, setSortBy] = useState('default');
@@ -36,34 +54,27 @@ export default function ProductGrid() {
 
   const searchContainerRef = useRef(null);
 
+  useEffect(() => {
+    onCategoryChange?.(selectedCategory);
+  }, [selectedCategory, onCategoryChange]);
+
   // Sync category when URL changes
   useEffect(() => {
     const handleCategoryChange = () => {
-      const urlCat = new URL(window.location).searchParams.get('category');
-      if (urlCat) {
-        if (urlCat === 'Filters' || urlCat === 'Others') {
-          setSelectedCategory('Filters & Others');
-        } else if (urlCat === 'Fish Food' || urlCat === 'Fish Foods') {
-          setSelectedCategory('Birds & Fish Food');
-        } else if (CATEGORIES.includes(urlCat)) {
-          setSelectedCategory(urlCat);
-        }
-        setCurrentPage(1);
-      }
+      const normalized = normalizeUrlCategory(new URL(window.location).searchParams.get('category'));
+      setSelectedCategory(normalized || 'All Products');
+      setSelectedBrand('All');
+      setCurrentPage(1);
     };
     window.addEventListener('categorychange', handleCategoryChange);
     return () => window.removeEventListener('categorychange', handleCategoryChange);
   }, []);
 
   useEffect(() => {
-    const cat = searchParams.get('category');
-    if (cat === 'Filters' || cat === 'Others') {
-      setSelectedCategory('Filters & Others');
-    } else if (cat === 'Fish Food' || cat === 'Fish Foods') {
-      setSelectedCategory('Birds & Fish Food');
-    } else if (cat && CATEGORIES.includes(cat)) {
-      setSelectedCategory(cat);
-    }
+    const normalized = normalizeUrlCategory(searchParams.get('category'));
+    setSelectedCategory(normalized || 'All Products');
+    const urlBrand = searchParams.get('brand');
+    setSelectedBrand(urlBrand || 'All');
   }, [searchParams]);
 
   // Click outside listener for search suggestions
@@ -80,13 +91,31 @@ export default function ProductGrid() {
   // Handle category tab click
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
+    setSelectedBrand('All');
     setCurrentPage(1);
+    if (category === 'TC Live Plants') {
+      setSearchQuery('');
+      setActiveSearch('');
+      searchParams.delete('q');
+    }
     if (category === 'All Products') {
       searchParams.delete('category');
     } else {
       searchParams.set('category', category);
     }
+    searchParams.delete('brand');
     searchParams.delete('page');
+    setSearchParams(searchParams, { replace: true });
+  };
+
+  // Handle brand filter pill click inside Birds & Fish Food
+  const handleBrandSelect = (brand) => {
+    setSelectedBrand(brand);
+    if (brand === 'All') {
+      searchParams.delete('brand');
+    } else {
+      searchParams.set('brand', brand);
+    }
     setSearchParams(searchParams, { replace: true });
   };
 
@@ -96,7 +125,7 @@ export default function ProductGrid() {
     if (q.length < 2) return [];
 
     return PRODUCTS.filter((item) => {
-      const target = `${item.name} ${item.category}`;
+      const target = `${item.name} ${item.category} ${item.brand || ''}`;
       return fuzzyMatch(target, q);
     }).slice(0, 6);
   }, [searchQuery]);
@@ -104,6 +133,7 @@ export default function ProductGrid() {
   // Execute full search across all categories
   const triggerSearch = (query) => {
     setActiveSearch(query);
+    setSelectedBrand('All');
     setCurrentPage(1);
     setShowSuggestions(false);
 
@@ -111,6 +141,7 @@ export default function ProductGrid() {
       // Searching queries across all 5 categories
       setSelectedCategory('All Products');
       searchParams.delete('category');
+      searchParams.delete('brand');
       searchParams.set('q', query.trim());
     } else {
       searchParams.delete('q');
@@ -153,7 +184,7 @@ export default function ProductGrid() {
       const q = activeSearch.toLowerCase().trim();
       const matchesSearch =
         !q ||
-        fuzzyMatch(`${item.name} ${item.category} ${item.shortDescription}`, q);
+        fuzzyMatch(`${item.name} ${item.category} ${item.brand || ''} ${item.shortDescription}`, q);
 
       return matchesCategory && matchesSearch;
     });
@@ -187,7 +218,33 @@ export default function ProductGrid() {
     return result;
   }, [selectedCategory, activeSearch, sortBy]);
 
-  // Pagination calculation
+  // Dynamic Brand Grouping inside Birds & Fish Food & Filters & Others, plus dedicated TC Live Plants view
+  const BRAND_GROUPED_CATEGORIES = new Set(['Birds & Fish Food', 'Filters & Others']);
+  const isBrandOrganizedView = BRAND_GROUPED_CATEGORIES.has(selectedCategory);
+  const isTcLivePlantsView = selectedCategory === 'TC Live Plants';
+
+  const brandGroups = useMemo(() => {
+    if (!isBrandOrganizedView) return [];
+    return groupProductsByBrand(filteredProducts);
+  }, [isBrandOrganizedView, filteredProducts]);
+
+  const displayedBrandGroups = useMemo(() => {
+    if (!isBrandOrganizedView) return [];
+    if (selectedBrand === 'All') return brandGroups;
+    const filteredByBrand = brandGroups.filter((g) => g.brand === selectedBrand);
+    return filteredByBrand.length > 0 ? filteredByBrand : brandGroups;
+  }, [isBrandOrganizedView, brandGroups, selectedBrand]);
+
+  const effectiveSelectedBrand = useMemo(() => {
+    if (!isBrandOrganizedView || selectedBrand === 'All') return 'All';
+    return brandGroups.some((g) => g.brand === selectedBrand) ? selectedBrand : 'All';
+  }, [isBrandOrganizedView, brandGroups, selectedBrand]);
+
+  const displayedBrandProductsCount = useMemo(() => {
+    return displayedBrandGroups.reduce((sum, g) => sum + g.products.length, 0);
+  }, [displayedBrandGroups]);
+
+  // Pagination calculation (used for all categories other than brand-organized Birds & Fish Food)
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE) || 1;
   const validPage = Math.min(Math.max(1, currentPage), totalPages);
 
@@ -244,7 +301,8 @@ export default function ProductGrid() {
             ))}
           </div>
 
-          {/* Premium Search & Sort Row */}
+          {/* Premium Search & Sort Row (Retail Catalog Categories) */}
+          {!isTcLivePlantsView && (
           <div className="search-and-sort">
             {/* Search Input Container with Live Suggestions */}
             <div className="search-input-wrapper-advanced" ref={searchContainerRef}>
@@ -344,13 +402,21 @@ export default function ProductGrid() {
               </select>
             </div>
           </div>
+          )}
         </div>
 
         {/* Results Info Bar */}
-        <div className="catalog-info-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0 1.5rem', fontSize: '0.88rem', color: 'var(--text-muted)', flexWrap: 'wrap', gap: '0.5rem' }}>
+        {!isTcLivePlantsView && (
+        <div className="catalog-info-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0 1.25rem', fontSize: '0.88rem', color: 'var(--text-muted)', flexWrap: 'wrap', gap: '0.5rem' }}>
           <span>
             {filteredProducts.length > 0 ? (
-              <>Showing <strong>{startIndex}–{endIndex}</strong> of <strong>{filteredProducts.length}</strong> products</>
+              isBrandOrganizedView ? (
+                <>
+                  Showing <strong>{displayedBrandProductsCount}</strong> {displayedBrandProductsCount === 1 ? 'product' : 'products'} across <strong>{displayedBrandGroups.length}</strong> {displayedBrandGroups.length === 1 ? 'brand' : 'brands'}
+                </>
+              ) : (
+                <>Showing <strong>{startIndex}–{endIndex}</strong> of <strong>{filteredProducts.length}</strong> products</>
+              )
             ) : (
               '0 products found'
             )}
@@ -358,11 +424,128 @@ export default function ProductGrid() {
           </span>
           <span style={{ fontSize: '0.8rem', color: 'var(--color-aqua-400)' }}>
             Category: {selectedCategory}
+            {isBrandOrganizedView && effectiveSelectedBrand !== 'All' ? ` • Brand: ${effectiveSelectedBrand}` : ''}
           </span>
         </div>
+        )}
 
-        {/* Main Products Grid */}
-        {paginatedProducts.length > 0 ? (
+        {/* Brand Quick-Filter Strip inside Birds & Fish Food */}
+        {!isTcLivePlantsView && isBrandOrganizedView && brandGroups.length > 0 && (
+          <div className="brand-filter-bar" role="region" aria-label="Filter by Brand">
+            <div className="brand-filter-top">
+              <span className="brand-filter-label">Browse by Brand ({brandGroups.length})</span>
+              {effectiveSelectedBrand !== 'All' && (
+                <button
+                  type="button"
+                  onClick={() => handleBrandSelect('All')}
+                  className="brand-reset-inline-btn"
+                >
+                  Show All Brands
+                </button>
+              )}
+            </div>
+            <div className="brand-pills-list" role="tablist" aria-label="Available Brands">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={effectiveSelectedBrand === 'All'}
+                onClick={() => handleBrandSelect('All')}
+                className={`brand-pill-btn ${effectiveSelectedBrand === 'All' ? 'active' : ''}`}
+              >
+                <span>All Brands</span>
+                <span className="brand-pill-count">{filteredProducts.length}</span>
+              </button>
+              {brandGroups.map((group) => (
+                <button
+                  type="button"
+                  key={group.brand}
+                  role="tab"
+                  aria-selected={effectiveSelectedBrand === group.brand}
+                  onClick={() => handleBrandSelect(group.brand)}
+                  className={`brand-pill-btn ${effectiveSelectedBrand === group.brand ? 'active' : ''}`}
+                >
+                  <span>{group.brand}</span>
+                  <span className="brand-pill-count">{group.products.length}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Main Products Content */}
+        {isTcLivePlantsView ? (
+          <TcLivePlantsShowcase embedded />
+        ) : filteredProducts.length === 0 ? (
+          /* Empty Search / Filter State */
+          <div className="empty-catalog-state">
+            <AlertCircle className="empty-state-icon" size={36} />
+            <h3 className="empty-state-title">No Matching Products Found</h3>
+            <p className="empty-state-text">
+              We could not find any products matching "{activeSearch}" under {selectedCategory}. Looking for a specific feed, pump, or medicine? Chat with our Ranipet store team directly!
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => {
+                  clearSearch();
+                  setSelectedCategory('All Products');
+                  setSelectedBrand('All');
+                  setCurrentPage(1);
+                }}
+                className="btn-primary"
+                style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}
+              >
+                Reset Catalog Filters
+              </button>
+              <button
+                onClick={() => openWhatsApp(createGeneralEnquiryMessage(`Enquiry for: ${activeSearch || selectedCategory}`))}
+                className="btn-whatsapp-hero"
+                style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}
+              >
+                <MessageCircle size={18} />
+                <span>Ask on WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        ) : isBrandOrganizedView ? (
+          <div className="brand-sections-container">
+            {displayedBrandGroups.map((group, groupIdx) => (
+              <section
+                key={group.brand}
+                id={`brand-${slugifyBrand(group.brand)}`}
+                className="brand-section-block"
+                aria-label={`${group.brand} products`}
+              >
+                <div className="brand-section-header">
+                  <div className="brand-section-heading-group">
+                    <h3 className="brand-section-title">{group.brand}</h3>
+                    <span className="brand-section-count">
+                      {group.products.length} {group.products.length === 1 ? 'Product' : 'Products'}
+                    </span>
+                  </div>
+                  {effectiveSelectedBrand !== 'All' && (
+                    <button
+                      type="button"
+                      onClick={() => handleBrandSelect('All')}
+                      className="brand-reset-inline-btn"
+                    >
+                      View All Brands
+                    </button>
+                  )}
+                </div>
+
+                <div className="products-grid">
+                  {group.products.map((product, pIdx) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      isPriority={groupIdx === 0 && pIdx < 4}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : (
           <>
             <div className="products-grid">
               {paginatedProducts.map((product, idx) => (
@@ -416,36 +599,6 @@ export default function ProductGrid() {
               </nav>
             )}
           </>
-        ) : (
-          /* Empty Search / Filter State */
-          <div className="empty-catalog-state">
-            <AlertCircle className="empty-state-icon" size={36} />
-            <h3 className="empty-state-title">No Matching Products Found</h3>
-            <p className="empty-state-text">
-              We could not find any products matching "{activeSearch}" under {selectedCategory}. Looking for a specific feed, pump, or medicine? Chat with our Ranipet store team directly!
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => {
-                  clearSearch();
-                  setSelectedCategory('All Products');
-                  setCurrentPage(1);
-                }}
-                className="btn-primary"
-                style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}
-              >
-                Reset Catalog Filters
-              </button>
-              <button
-                onClick={() => openWhatsApp(createGeneralEnquiryMessage(`Enquiry for: ${activeSearch || selectedCategory}`))}
-                className="btn-whatsapp-hero"
-                style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}
-              >
-                <MessageCircle size={18} />
-                <span>Ask on WhatsApp</span>
-              </button>
-            </div>
-          </div>
         )}
       </div>
     </section>

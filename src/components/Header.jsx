@@ -8,9 +8,27 @@ import { openWhatsApp, createGeneralEnquiryMessage, DISPLAY_PHONE } from '../uti
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [activeUrlCategory, setActiveUrlCategory] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return new URL(window.location).searchParams.get('category') || '';
+  });
   const { totalItems, openCart, subtotal } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Keep active category highlights synced with URL / custom categorychange events
+  useEffect(() => {
+    const syncCategory = () => {
+      setActiveUrlCategory(new URL(window.location).searchParams.get('category') || '');
+    };
+    syncCategory();
+    window.addEventListener('categorychange', syncCategory);
+    window.addEventListener('popstate', syncCategory);
+    return () => {
+      window.removeEventListener('categorychange', syncCategory);
+      window.removeEventListener('popstate', syncCategory);
+    };
+  }, [location.pathname, location.search]);
 
   // Lock background scroll when mobile menu is open
   useEffect(() => {
@@ -44,10 +62,20 @@ export default function Header() {
     setMobileMenuOpen(false);
     setCategoryDropdownOpen(false);
     if (location.pathname !== '/') {
-      navigate(`/?category=${encodeURIComponent(cat)}#products`);
+      const dest = cat === 'All Products' ? '/#products' : `/?category=${encodeURIComponent(cat)}#products`;
+      navigate(dest);
     } else {
       const url = new URL(window.location);
-      url.searchParams.set('category', cat);
+      if (cat === 'All Products') {
+        url.searchParams.delete('category');
+      } else {
+        url.searchParams.set('category', cat);
+      }
+      url.searchParams.delete('brand');
+      url.searchParams.delete('page');
+      if (cat === 'TC Live Plants') {
+        url.searchParams.delete('q');
+      }
       window.history.pushState({}, '', url);
       window.dispatchEvent(new Event('categorychange'));
       const el = document.getElementById('products');
@@ -74,8 +102,13 @@ export default function Header() {
     'Birds & Fish Food',
     'Fish Medicines',
     'Filters & Others',
-    'Tanks'
+    'Tanks',
+    'TC Live Plants'
   ];
+
+  const isTcPlantsActive =
+    location.pathname === '/' &&
+    (activeUrlCategory === 'TC Live Plants' || location.hash === '#tc-live-plants');
 
   return (
     <header className="site-header">
@@ -104,7 +137,7 @@ export default function Header() {
         <nav className="desktop-nav" aria-label="Main Navigation">
           <Link
             to="/"
-            className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
+            className={`nav-link ${location.pathname === '/' && !isTcPlantsActive ? 'active' : ''}`}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             Home
@@ -161,7 +194,7 @@ export default function Header() {
                       padding: '0.55rem 1rem',
                       background: 'transparent',
                       border: 'none',
-                      color: 'var(--text-secondary)',
+                      color: activeUrlCategory === cat ? 'var(--color-aqua-400)' : 'var(--text-secondary)',
                       fontSize: '0.86rem',
                       cursor: 'pointer',
                       transition: 'color 0.2s, background 0.2s'
@@ -171,7 +204,7 @@ export default function Header() {
                       e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.color = 'var(--text-secondary)';
+                      e.currentTarget.style.color = activeUrlCategory === cat ? 'var(--color-aqua-400)' : 'var(--text-secondary)';
                       e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
@@ -181,6 +214,14 @@ export default function Header() {
               </div>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={() => handleCategoryNav('TC Live Plants')}
+            className={`nav-link ${isTcPlantsActive ? 'active' : ''}`}
+          >
+            TC Live Plants
+          </button>
 
           <button
             onClick={() => handleCategoryNav('All Products')}

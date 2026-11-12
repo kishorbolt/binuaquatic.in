@@ -6,7 +6,7 @@
 
 export const WHATSAPP_PHONE = '919342221034';
 export const DISPLAY_PHONE = '+91 93422 21034';
-export const STORE_LANDLINE = '+04172317575';
+export const STORE_LANDLINE = '+04172 317 575';
 export const STORE_EMAIL = 'binuaquaticandplants@gmail.com';
 export const DEVELOPER_PHONE = '9488793023';
 export const DEVELOPER_NAME = 'PIYROWARE';
@@ -133,6 +133,29 @@ export function createTankEnquiryMessage(product) {
     "",
     "Thank you!"
   ].join('\n');
+}
+
+export function createPlantEnquiryMessage(plant) {
+  const plantName = typeof plant === 'string' ? plant : plant?.name;
+  const lines = [
+    "Hello Binu's Aquatic and Plants!",
+    "",
+    "I would like to enquire about this TC Live Plant:",
+    ""
+  ];
+
+  if (plantName) {
+    lines.push(`Plant Name: ${plantName}`);
+  } else {
+    lines.push("Category: TC Live Plants");
+  }
+
+  lines.push("");
+  lines.push("Please share availability and further details.");
+  lines.push("");
+  lines.push("Thank you!");
+
+  return lines.join('\n');
 }
 
 export function createGeneralEnquiryMessage(topic = 'General Enquiry') {
